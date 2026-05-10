@@ -36,7 +36,7 @@ export default function Sidebar({ groups, selId, onSelect, search, onSearch, sel
         </div>
       )}
       <div style={{ padding: "10px 10px 6px", borderBottom: "1px solid #1e2d3d", flexShrink: 0 }}>
-        <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 6 }}>FILTER BY ORIGIN</div>
+        <div style={{ color: "#ff69b4", fontSize: 10, letterSpacing: 2, marginBottom: 6, fontWeight: "bold", textShadow: "0 0 8px #ff69b488" }}>⬡ FILTER BY ORIGIN</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
           <button onClick={() => { playClick(); onCountryToggle("ALL"); }}
             style={{ background: isAll ? "#00ff8833" : "transparent", border: `1px solid ${isAll ? "#00ff88" : "#1e2d3d"}`, borderRadius: 3, padding: "3px 7px", cursor: "pointer", fontSize: 11, color: isAll ? "#00ff88" : "#4a6378", fontFamily: "monospace", transition: "all 0.15s" }}>

@@ -14,6 +14,7 @@ import KillChain from "./views/KillChain.jsx";
 import ImpactAnalysis from "./views/ImpactAnalysis.jsx";
 import DefenseGapMap from "./views/DefenseGapMap.jsx";
 import ThreatBriefing from "./views/ThreatBriefing.jsx";
+import WelcomeScreen from "./components/WelcomeScreen.jsx";
 
 const TABS = [
   ["killchain",  "⬛ KILL CHAIN"],
@@ -37,6 +38,15 @@ export default function App() {
   const { groups, links, techniques, metadata, loading, error, isStale, triggerUpdate } = useAttackData();
   const { soundType, setSoundType, playClick, SOUND_TYPES } = useSound();
   const { isMobile, isTablet, isDesktop } = useWindowSize();
+
+  const [showWelcome, setShowWelcome] = useState(() => {
+    try { return sessionStorage.getItem("solar_welcomed") !== "1"; } catch { return true; }
+  });
+
+  const dismissWelcome = () => {
+    try { sessionStorage.setItem("solar_welcomed", "1"); } catch {}
+    setShowWelcome(false);
+  };
 
   const [selId, setSelId]             = useState(null);
   const [view, setView]               = useState("killchain");
@@ -96,7 +106,7 @@ export default function App() {
         <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 8 }}>
           {showSidebar && !isDesktop && (
             <button onClick={() => setSidebarOpen(o => !o)}
-              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "5px 9px", color: "#4a6378", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0 }}>
+              style={{ background: "#ff69b422", border: "1px solid #ff69b4", borderRadius: 4, padding: "5px 9px", color: "#ff69b4", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0, boxShadow: "0 0 8px #ff69b455" }}>
               ☰
             </button>
           )}
@@ -342,6 +352,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Welcome screen overlay */}
+      {showWelcome && <WelcomeScreen onDismiss={dismissWelcome} />}
 
       {/* Footer */}
       <div style={{ background: "#0d1117", borderTop: "1px solid #1e2d3d", padding: "6px 20px", flexShrink: 0, textAlign: "center", fontSize: 10, color: "#3d5168" }}>
