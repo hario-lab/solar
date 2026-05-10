@@ -128,7 +128,7 @@ export default function DefenseGapMap({ groups, techniques }) {
               ))}
             </div>
             <button onClick={() => setDangerOpen(o => !o)}
-              style={{ background: dangerOpen ? "#ef444422" : "transparent", border: `1px solid ${dangerOpen ? "#ef4444" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", color: dangerOpen ? "#ef4444" : "#4a6378", fontSize: 10, cursor: "pointer", fontFamily: "monospace", whiteSpace: "nowrap" }}>
+              style={{ background: dangerOpen ? "#ff69b422" : "#ff69b411", border: `1px solid ${dangerOpen ? "#ff69b4" : "#ff69b466"}`, borderRadius: 4, padding: "4px 10px", color: "#ff69b4", fontSize: 10, cursor: "pointer", fontFamily: "monospace", whiteSpace: "nowrap", fontWeight: "bold", boxShadow: dangerOpen ? "0 0 8px #ff69b455" : "none" }}>
               ⚠ 危険度
             </button>
             <button onClick={exportCsv}
