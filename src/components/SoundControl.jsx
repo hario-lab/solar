@@ -34,10 +34,6 @@ export default function SoundControl({ soundType, setSoundType, playClick, SOUND
   };
 
   const icon    = ICON[soundType] || "🔊";
-  const isOff   = soundType === "OFF";
-  const accent  = isOff ? "#3d5168" : "#00ff88";
-  const bgColor = isOff ? "transparent" : "#00ff8811";
-  const border  = isOff ? "#1e2d3d" : "#00ff8866";
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
@@ -46,12 +42,12 @@ export default function SoundControl({ soundType, setSoundType, playClick, SOUND
         onClick={() => setOpen(o => !o)}
         title="Sound type"
         style={{
-          background: bgColor,
-          border: `1px solid ${border}`,
+          background: "transparent",
+          border: "1px solid #1e2d3d",
           borderRadius: 4,
           padding: compact ? "4px 8px" : "4px 10px",
           fontSize: 11,
-          color: accent,
+          color: "#4a6378",
           cursor: "pointer",
           fontFamily: "monospace",
           letterSpacing: 1,
