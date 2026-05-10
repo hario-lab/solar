@@ -183,18 +183,22 @@ Write a cinematic but technically accurate narrative from initial access to impa
             </Bar>
           </BarChart>
         </div>
-        {/* PLATFORMS — desktop only */}
-        {!isCompact && (
-          <div style={{ width: 200, flexShrink: 0 }}>
-            <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>PLATFORMS</div>
-            <BarChart width={196} height={Math.max(80, platformData.length * 18)} data={platformData} layout="vertical" margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
-              <XAxis type="number" hide />
-              <YAxis type="category" dataKey="name" tick={{ fill: "#8b949e", fontSize: 9 }} axisLine={false} tickLine={false} width={85} />
-              <Tooltip content={<CTooltip />} />
-              <Bar dataKey="count" fill="#00d4ff" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }} />
-            </BarChart>
-          </div>
-        )}
+        {/* PLATFORMS — always visible (compact on tablet/mobile) */}
+        <div style={{ width: isCompact ? 110 : 200, flexShrink: 0 }}>
+          <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: isCompact ? 1 : 2 }}>PLATFORMS</div>
+          <BarChart
+            width={isCompact ? 106 : 196}
+            height={isCompact ? 38 : Math.max(80, platformData.length * 18)}
+            data={platformData}
+            layout="vertical"
+            margin={{ top: 2, right: 4, bottom: 2, left: 0 }}
+          >
+            <XAxis type="number" hide />
+            <YAxis type="category" dataKey="name" tick={{ fill: "#8b949e", fontSize: isCompact ? 7 : 9 }} axisLine={false} tickLine={false} width={isCompact ? 60 : 85} />
+            <Tooltip content={<CTooltip />} />
+            <Bar dataKey="count" fill="#00d4ff" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }} />
+          </BarChart>
+        </div>
       </div>
 
       {/* Group header */}
