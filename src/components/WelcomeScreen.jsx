@@ -55,8 +55,7 @@ export default function WelcomeScreen({ onDismiss }) {
           justifyContent: "center",
           gap: 6,
         }}>
-          <span>▶</span>
-          <span>Tap <span style={{ background: "#ff69b422", border: "1px solid #ff69b488", borderRadius: 3, padding: "1px 6px" }}>Filter by Origin</span> to get started</span>
+          <span>Tap Filter by Origin to get started</span>
         </div>
 
         {/* Divider */}
@@ -78,15 +77,14 @@ export default function WelcomeScreen({ onDismiss }) {
           justifyContent: "center",
           gap: 6,
         }}>
-          <span>▶</span>
-          <span>左上のフィルターボタンから国・グループを選択してください</span>
+          <span>画面左上のフィルターから国・グループを選択してください</span>
         </div>
 
         {/* CTA button */}
         <button
           onClick={onDismiss}
           style={{
-            background: "#ff69b4",
+            background: "#00ff88",
             border: "none",
             borderRadius: 6,
             padding: "12px 40px",
