@@ -47,6 +47,7 @@ export default function App() {
   const [showSettings, setShowSettings]     = useState(false);
   const [showAbout, setShowAbout]           = useState(false);
   const [sidebarOpen, setSidebarOpen]       = useState(false);
+  const [showTabMenu, setShowTabMenu]       = useState(false);
 
   const defaultSidebarW = isTablet ? 200 : 230;
   const [sidebarW, setSidebarW] = useState(() => loadSidebarW(defaultSidebarW));
@@ -90,8 +91,8 @@ export default function App() {
     <div style={{ height: "100dvh", overflow: "hidden", background: "#070c12", color: "#c9d1d9", fontFamily: "monospace", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2d3d", flexShrink: 0 }}>
-        {/* Row 1: logo + action buttons */}
-        <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Row 1: logo + controls */}
+        <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 8 }}>
           {showSidebar && !isDesktop && (
             <button onClick={() => setSidebarOpen(o => !o)}
               style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "5px 9px", color: "#4a6378", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0 }}>
@@ -100,10 +101,10 @@ export default function App() {
           )}
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, flexShrink: 0 }}>
             <div style={{ color: "#00ff88", fontWeight: "bold", fontSize: 13, letterSpacing: 3 }}>◈ SOLAR</div>
-            <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>ATT&CK Scenario Engine</div>
+            <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>Structured Online Lateral Attack Reconnaissance</div>
           </div>
           {isDesktop && (
-            <div style={{ color: "#3d5168", fontSize: 11, flexShrink: 0 }}>MITRE ATT&CK® Enterprise · {loading ? "…" : groups.length} groups</div>
+            <div style={{ color: "#3d5168", fontSize: 11, flexShrink: 0, marginLeft: 8 }}>MITRE ATT&CK® · {loading ? "…" : groups.length} groups</div>
           )}
           {metadata?.lastUpdated && isDesktop && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -137,17 +138,42 @@ export default function App() {
               playClick={playClick}
               SOUND_TYPES={SOUND_TYPES}
             />
+            {/* Tab menu button — non-desktop only */}
+            {!isDesktop && (
+              <div style={{ position: "relative" }}>
+                <button onClick={() => setShowTabMenu(o => !o)}
+                  style={{ background: showTabMenu ? "#00ff8822" : "transparent", border: `1px solid ${showTabMenu ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 13, color: showTabMenu ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+                  ≡
+                </button>
+                {showTabMenu && (
+                  <>
+                    <div onClick={() => setShowTabMenu(false)}
+                      style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 50, background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 6, overflow: "hidden", minWidth: 180, boxShadow: "0 8px 24px #00000088" }}>
+                      {TABS.map(([v, label]) => (
+                        <button key={v} onClick={() => { playClick(); setView(v); setShowTabMenu(false); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: view === v ? "#00ff8822" : "transparent", border: "none", borderBottom: "1px solid #1e2d3d", padding: "12px 16px", color: view === v ? "#00ff88" : "#8b949e", cursor: "pointer", fontSize: 13, fontFamily: "monospace", letterSpacing: 1 }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
-        {/* Row 2: tabs — always scrollable */}
-        <div className="tabs-scroll" style={{ display: "flex", gap: 4, padding: "0 12px 7px" }}>
-          {TABS.map(([v, label]) => (
-            <button key={v} onClick={() => { playClick(); setView(v); }}
-              style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 12px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0 }}>
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Row 2: inline tabs — desktop only */}
+        {isDesktop && (
+          <div style={{ display: "flex", gap: 4, padding: "0 12px 7px" }}>
+            {TABS.map(([v, label]) => (
+              <button key={v} onClick={() => { playClick(); setView(v); }}
+                style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 12px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0 }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Error banner */}
