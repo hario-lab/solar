@@ -144,9 +144,9 @@ Write a cinematic but technically accurate narrative from initial access to impa
       {/* Stats row */}
       <div style={{ background: "#070c12", borderBottom: "1px solid #1e2d3d", padding: isCompact ? "6px 12px" : "10px 16px", display: "flex", gap: isCompact ? 6 : 10, alignItems: "center", flexShrink: 0, overflowX: "auto" }}>
         <div style={{ display: "flex", gap: isCompact ? 6 : 8, flexShrink: 0 }}>
-          <StatCard label="TECHNIQUES" value={group.techniques.length} sub={`+${totalSubs} sub`} color="#00ff88" />
-          <StatCard label="TACTICS" value={usedTactics.length} sub={`/${TACTIC_ORDER.length}`} color="#00d4ff" />
           <StatCard label="ORIGIN" value={group.country?.flag || "?"} sub={group.country?.name || "Unknown"} color={COUNTRY_META[group.country?.code]?.color || "#6b7280"} />
+          <StatCard label="TACTICS" value={usedTactics.length} sub={`/${TACTIC_ORDER.length}`} color="#00d4ff" />
+          <StatCard label="TECHNIQUES" value={group.techniques.length} sub={`+${totalSubs} sub`} color="#00ff88" />
         </div>
         {/* TACTIC chart — compact fixed width on tablet/mobile */}
         <div style={{ width: isCompact ? 160 : undefined, flex: isCompact ? undefined : 1, minWidth: isCompact ? 160 : 160, flexShrink: 0 }}>
