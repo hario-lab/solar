@@ -51,7 +51,8 @@ const CTooltip = ({ active, payload, label }) => {
 };
 
 export default function KillChain({ group, groups, onSelectGroup, playClick = () => {} }) {
-  const { isMobile } = useWindowSize();
+  const { isMobile, isTablet } = useWindowSize();
+  const isCompact = isMobile || isTablet;
   const [selTech, setSelTech]   = useState(null);
   const [selSub, setSelSub]     = useState(null);
   const [selTactic, setSelTactic] = useState(null);
@@ -136,15 +137,15 @@ Write a cinematic but technically accurate narrative from initial access to impa
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Stats row */}
-      <div style={{ background: "#070c12", borderBottom: "1px solid #1e2d3d", padding: "12px 16px", display: "flex", gap: 12, alignItems: "flex-start", flexShrink: 0, flexWrap: isMobile ? "wrap" : "nowrap", overflowX: isMobile ? "auto" : "visible" }}>
+      <div style={{ background: "#070c12", borderBottom: "1px solid #1e2d3d", padding: "10px 16px", display: "flex", gap: 10, alignItems: "center", flexShrink: 0, overflowX: "auto" }}>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-          <StatCard label="TECHNIQUES" value={group.techniques.length} sub={`+ ${totalSubs} subtechs`} color="#00ff88" />
-          <StatCard label="TACTICS" value={usedTactics.length} sub={`of ${TACTIC_ORDER.length}`} color="#00d4ff" />
+          <StatCard label="TECHNIQUES" value={group.techniques.length} sub={`+${totalSubs} sub`} color="#00ff88" />
+          <StatCard label="TACTICS" value={usedTactics.length} sub={`/${TACTIC_ORDER.length}`} color="#00d4ff" />
           <StatCard label="ORIGIN" value={group.country?.flag || "?"} sub={group.country?.name || "Unknown"} color={COUNTRY_META[group.country?.code]?.color || "#6b7280"} />
         </div>
-        <div style={{ flex: 1, minWidth: isMobile ? "100%" : 0 }}>
-          <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>TACTIC DISTRIBUTION</div>
-          <ResponsiveContainer width="100%" height={80}>
+        <div style={{ flex: 1, minWidth: isCompact ? 160 : 200 }}>
+          <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>TACTIC DIST.</div>
+          <ResponsiveContainer width="100%" height={isCompact ? 46 : 80}>
             <BarChart data={tacticChartData} margin={{ top: 0, right: 0, bottom: 0, left: -30 }}>
               <XAxis dataKey="name" tick={{ fill: "#3d5168", fontSize: 7 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#3d5168", fontSize: 8 }} axisLine={false} tickLine={false} />
@@ -155,32 +156,28 @@ Write a cinematic but technically accurate narrative from initial access to impa
             </BarChart>
           </ResponsiveContainer>
         </div>
-        {!isMobile && (
-          <>
-            <div style={{ width: 200, flexShrink: 0 }}>
-              <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>PLATFORMS</div>
-              <BarChart width={196} height={Math.max(80, platformData.length * 18)} data={platformData} layout="vertical" margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#8b949e", fontSize: 9 }} axisLine={false} tickLine={false} width={85} />
-                <Tooltip content={<CTooltip />} />
-                <Bar dataKey="count" fill="#00d4ff" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }} />
-              </BarChart>
-            </div>
-            <div style={{ width: 100, flexShrink: 0 }}>
-              <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>BY NATION</div>
-              <ResponsiveContainer width="100%" height={80}>
-                <PieChart>
-                  <Pie data={countryDist} dataKey="count" cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2}>
-                    {countryDist.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v, n, p) => [v + " groups", p.payload.code]}
-                    contentStyle={{ background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 4, fontSize: 11, fontFamily: "monospace" }}
-                    itemStyle={{ color: "#c9d1d9" }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </>
-        )}
+        <div style={{ width: isCompact ? 140 : 200, flexShrink: 0 }}>
+          <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>PLATFORMS</div>
+          <BarChart width={isCompact ? 136 : 196} height={isCompact ? 46 : Math.max(80, platformData.length * 18)} data={platformData} layout="vertical" margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
+            <XAxis type="number" hide />
+            <YAxis type="category" dataKey="name" tick={{ fill: "#8b949e", fontSize: 8 }} axisLine={false} tickLine={false} width={isCompact ? 70 : 85} />
+            <Tooltip content={<CTooltip />} />
+            <Bar dataKey="count" fill="#00d4ff" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }} />
+          </BarChart>
+        </div>
+        <div style={{ width: 80, flexShrink: 0 }}>
+          <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>BY NATION</div>
+          <ResponsiveContainer width="100%" height={isCompact ? 46 : 80}>
+            <PieChart>
+              <Pie data={countryDist} dataKey="count" cx="50%" cy="50%" innerRadius={isCompact ? 10 : 18} outerRadius={isCompact ? 20 : 34} paddingAngle={2}>
+                {countryDist.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+              <Tooltip formatter={(v, n, p) => [v + " groups", p.payload.code]}
+                contentStyle={{ background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 4, fontSize: 11, fontFamily: "monospace" }}
+                itemStyle={{ color: "#c9d1d9" }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Group header */}
@@ -193,7 +190,7 @@ Write a cinematic but technically accurate narrative from initial access to impa
           {group.name}
         </a>
         <span style={{ color: "#3d5168", fontSize: 11 }}>{group.id}</span>
-        {!isMobile && <span style={{ color: "#3d5168", fontSize: 9, marginLeft: 8 }}>▼ サブ展開 · タクティクス/テクニック をクリックで詳細表示</span>}
+        {!isCompact && <span style={{ color: "#3d5168", fontSize: 9, marginLeft: 8 }}>▼ サブ展開 · タクティクス/テクニック をクリックで詳細表示</span>}
       </div>
 
       {/* Main area: kill chain + side panel */}
@@ -227,7 +224,7 @@ Write a cinematic but technically accurate narrative from initial access to impa
         {panelOpen && (
           <>
             <ResizableHandle onDrag={handlePanelDrag} />
-            <div style={{ width: isMobile ? "80vw" : panelW, borderLeft: "1px solid #1e2d3d", background: "#0d1117", display: "flex", flexDirection: "column", flexShrink: 0, overflow: "hidden" }}>
+            <div style={{ width: isCompact ? "80vw" : panelW, borderLeft: "1px solid #1e2d3d", background: "#0d1117", display: "flex", flexDirection: "column", flexShrink: 0, overflow: "hidden" }}>
               {/* Panel header */}
               <div style={{ padding: "10px 14px", borderBottom: "1px solid #1e2d3d", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
                 <div>

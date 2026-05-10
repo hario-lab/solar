@@ -36,7 +36,7 @@ function loadSidebarW(fallback) {
 export default function App() {
   const { groups, links, techniques, metadata, loading, error, isStale, triggerUpdate } = useAttackData();
   const { soundType, setSoundType, playClick, SOUND_TYPES } = useSound();
-  const { isMobile, isTablet } = useWindowSize();
+  const { isMobile, isTablet, isDesktop } = useWindowSize();
 
   const [selId, setSelId]             = useState(null);
   const [view, setView]               = useState("killchain");
@@ -62,7 +62,7 @@ export default function App() {
   const effectiveSelId = selId || groups[0]?.id;
   const group = groups.find(g => g.id === effectiveSelId);
 
-  const handleSelect = id => { setSelId(id); if (isMobile) setSidebarOpen(false); };
+  const handleSelect = id => { setSelId(id); if (!isDesktop) setSidebarOpen(false); };
 
   const handleUpdate = async source => {
     setUpdateLoading(true);
@@ -89,61 +89,64 @@ export default function App() {
   return (
     <div style={{ height: "100dvh", overflow: "hidden", background: "#070c12", color: "#c9d1d9", fontFamily: "monospace", display: "flex", flexDirection: "column" }}>
       {/* Header */}
-      <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2d3d", padding: "9px 12px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-        {/* Mobile sidebar toggle */}
-        {showSidebar && isMobile && (
-          <button onClick={() => setSidebarOpen(o => !o)}
-            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "5px 9px", color: "#4a6378", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0 }}>
-            ☰
-          </button>
-        )}
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, flexShrink: 0 }}>
-          <div style={{ color: "#00ff88", fontWeight: "bold", fontSize: 13, letterSpacing: 3 }}>◈ SOLAR</div>
-          <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>ATT&CK Scenario Engine</div>
-        </div>
-        {!isMobile && (
-          <div style={{ color: "#3d5168", fontSize: 11, flexShrink: 0 }}>MITRE ATT&CK® Enterprise · {loading ? "…" : groups.length} groups</div>
-        )}
-
-        {metadata?.lastUpdated && !isMobile && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            {isStale && (
-              <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9, letterSpacing: 1 }}>
-                ⚠ STALE
-              </span>
-            )}
-            <span style={{ color: "#3d5168", fontSize: 10 }}>
-              {fmtDate(metadata.lastUpdated)}
-            </span>
+      <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2d3d", flexShrink: 0 }}>
+        {/* Row 1: logo + action buttons */}
+        <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+          {showSidebar && !isDesktop && (
+            <button onClick={() => setSidebarOpen(o => !o)}
+              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "5px 9px", color: "#4a6378", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0 }}>
+              ☰
+            </button>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, flexShrink: 0 }}>
+            <div style={{ color: "#00ff88", fontWeight: "bold", fontSize: 13, letterSpacing: 3 }}>◈ SOLAR</div>
+            <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>ATT&CK Scenario Engine</div>
           </div>
-        )}
-
-        {/* Tabs — scrollable on mobile */}
-        <div className="tabs-scroll" style={{ marginLeft: "auto", display: "flex", gap: 4, flexShrink: 0 }}>
+          {isDesktop && (
+            <div style={{ color: "#3d5168", fontSize: 11, flexShrink: 0 }}>MITRE ATT&CK® Enterprise · {loading ? "…" : groups.length} groups</div>
+          )}
+          {metadata?.lastUpdated && isDesktop && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              {isStale && (
+                <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9, letterSpacing: 1 }}>
+                  ⚠ STALE
+                </span>
+              )}
+              <span style={{ color: "#3d5168", fontSize: 10 }}>{fmtDate(metadata.lastUpdated)}</span>
+            </div>
+          )}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
+            {isStale && !isDesktop && (
+              <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9 }}>⚠</span>
+            )}
+            <button onClick={() => { playClick(); setShowUpdateModal(true); }}
+              style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+              ↻
+            </button>
+            <button onClick={() => { playClick(); setShowSettings(true); }}
+              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+              ⚙
+            </button>
+            <button onClick={() => { playClick(); setShowAbout(true); }}
+              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+              ⓘ
+            </button>
+            <SoundControl
+              soundType={soundType}
+              setSoundType={setSoundType}
+              playClick={playClick}
+              SOUND_TYPES={SOUND_TYPES}
+            />
+          </div>
+        </div>
+        {/* Row 2: tabs — always scrollable */}
+        <div className="tabs-scroll" style={{ display: "flex", gap: 4, padding: "0 12px 7px" }}>
           {TABS.map(([v, label]) => (
             <button key={v} onClick={() => { playClick(); setView(v); }}
-              style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s", whiteSpace: "nowrap" }}>
+              style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 12px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0 }}>
               {label}
             </button>
           ))}
-          <button onClick={() => { playClick(); setShowUpdateModal(true); }}
-            style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
-            ↻
-          </button>
-          <button onClick={() => { playClick(); setShowSettings(true); }}
-            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
-            ⚙
-          </button>
-          <button onClick={() => { playClick(); setShowAbout(true); }}
-            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
-            ⓘ
-          </button>
-          <SoundControl
-            soundType={soundType}
-            setSoundType={setSoundType}
-            playClick={playClick}
-            SOUND_TYPES={SOUND_TYPES}
-          />
         </div>
       </div>
 
@@ -164,8 +167,8 @@ export default function App() {
       {/* Main layout */}
       {!!groups.length && (
         <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
-          {/* Mobile sidebar overlay backdrop */}
-          {isMobile && sidebarOpen && showSidebar && (
+          {/* Overlay backdrop (mobile + tablet) */}
+          {!isDesktop && sidebarOpen && showSidebar && (
             <div onClick={() => setSidebarOpen(false)}
               style={{ position: "absolute", inset: 0, background: "#00000088", zIndex: 20 }} />
           )}
@@ -173,7 +176,7 @@ export default function App() {
           {/* Sidebar */}
           {showSidebar && (
             <>
-              {isMobile ? (
+              {!isDesktop ? (
                 sidebarOpen && (
                   <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 30, display: "flex" }}>
                     <Sidebar
@@ -185,7 +188,7 @@ export default function App() {
                       selectedCountries={selectedCountries}
                       onCountryToggle={toggleCountry}
                       playClick={playClick}
-                      width={280}
+                      width={300}
                       onClose={() => setSidebarOpen(false)}
                     />
                   </div>
