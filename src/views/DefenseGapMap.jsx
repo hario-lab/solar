@@ -211,33 +211,33 @@ export default function DefenseGapMap({ groups, techniques }) {
           </div>
         </div>
 
-        {/* Danger panel — tablet/mobile: absolute overlay; desktop: side panel */}
+        {/* Danger panel:
+              desktop / tablet → side panel (heatmap stays interactive)
+              mobile only      → absolute overlay with backdrop            */}
         {dangerOpen && (
           <>
-            {/* Backdrop (compact only) */}
-            {isCompact && (
+            {/* Backdrop + overlay: mobile only */}
+            {isMobile && (
               <div onClick={() => setDangerOpen(false)}
                 style={{ position: "absolute", inset: 0, background: "#00000066", zIndex: 20 }} />
             )}
 
-            {/* Resize handle (desktop only) */}
+            {/* Resize handle: desktop only */}
             {!isCompact && <ResizableHandle onDrag={handlePanelDrag} />}
 
             <div style={{
-              width: isCompact ? Math.min(300, window.innerWidth * 0.85) : panelW,
+              width: isMobile ? Math.min(300, window.innerWidth * 0.85) : isTablet ? 200 : panelW,
               borderLeft: "1px solid #1e2d3d",
               background: "#0d1117",
               display: "flex",
               flexDirection: "column",
               flexShrink: 0,
-              ...(isCompact ? { position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 30, boxShadow: "-8px 0 24px #000000aa" } : {}),
+              ...(isMobile ? { position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 30, boxShadow: "-8px 0 24px #000000aa" } : {}),
             }}>
               <div style={{ padding: "10px 12px", borderBottom: "1px solid #1e2d3d", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2 }}>⚠ 危険度ランキング</span>
-                {isCompact && (
-                  <button onClick={() => setDangerOpen(false)}
-                    style={{ background: "none", border: "none", color: "#3d5168", cursor: "pointer", fontSize: 14, padding: "2px 6px" }}>✕</button>
-                )}
+                <button onClick={() => setDangerOpen(false)}
+                  style={{ background: "none", border: "none", color: "#3d5168", cursor: "pointer", fontSize: 14, padding: "2px 6px" }}>✕</button>
               </div>
               <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
                 {dangerGroups.filter(g => g.uncoveredCount > 0).slice(0, 15).map((g) => (
