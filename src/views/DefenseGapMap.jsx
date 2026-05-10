@@ -22,10 +22,12 @@ function loadPanelW(fallback) {
 }
 
 export default function DefenseGapMap({ groups, techniques }) {
-  const { isMobile } = useWindowSize();
+  const { isMobile, isTablet } = useWindowSize();
+  const isCompact = isMobile || isTablet;
   const [coverage, setCoverage] = useState(loadCoverage);
   const [filterState, setFilterState] = useState("all");
   const [panelW, setPanelW] = useState(() => loadPanelW(260));
+  const [dangerOpen, setDangerOpen] = useState(!isCompact);
 
   const persist = useCallback(cov => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cov));
@@ -125,6 +127,10 @@ export default function DefenseGapMap({ groups, techniques }) {
                 </button>
               ))}
             </div>
+            <button onClick={() => setDangerOpen(o => !o)}
+              style={{ background: dangerOpen ? "#ef444422" : "transparent", border: `1px solid ${dangerOpen ? "#ef4444" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", color: dangerOpen ? "#ef4444" : "#4a6378", fontSize: 10, cursor: "pointer", fontFamily: "monospace", whiteSpace: "nowrap" }}>
+              ⚠ 危険度
+            </button>
             <button onClick={exportCsv}
               style={{ background: "#0a0d1a", border: "1px solid #3b82f6", borderRadius: 4, padding: "4px 12px", color: "#3b82f6", fontSize: 10, cursor: "pointer", fontFamily: "monospace" }}>
               ⬇ CSV
@@ -148,7 +154,7 @@ export default function DefenseGapMap({ groups, techniques }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
         {/* Heatmap */}
         <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", padding: "12px 16px" }}>
           <div style={{ display: "flex", gap: 6, minWidth: "max-content" }}>
@@ -205,16 +211,36 @@ export default function DefenseGapMap({ groups, techniques }) {
           </div>
         </div>
 
-        {/* Danger panel */}
-        {!isMobile && (
+        {/* Danger panel — tablet/mobile: absolute overlay; desktop: side panel */}
+        {dangerOpen && (
           <>
-            <ResizableHandle onDrag={handlePanelDrag} />
-            <div style={{ width: panelW, borderLeft: "1px solid #1e2d3d", background: "#0d1117", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-              <div style={{ padding: "10px 12px", borderBottom: "1px solid #1e2d3d", color: "#3d5168", fontSize: 9, letterSpacing: 2 }}>
-                危険度ランキング（未対応テクニック保有グループ）
+            {/* Backdrop (compact only) */}
+            {isCompact && (
+              <div onClick={() => setDangerOpen(false)}
+                style={{ position: "absolute", inset: 0, background: "#00000066", zIndex: 20 }} />
+            )}
+
+            {/* Resize handle (desktop only) */}
+            {!isCompact && <ResizableHandle onDrag={handlePanelDrag} />}
+
+            <div style={{
+              width: isCompact ? Math.min(300, window.innerWidth * 0.85) : panelW,
+              borderLeft: "1px solid #1e2d3d",
+              background: "#0d1117",
+              display: "flex",
+              flexDirection: "column",
+              flexShrink: 0,
+              ...(isCompact ? { position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 30, boxShadow: "-8px 0 24px #000000aa" } : {}),
+            }}>
+              <div style={{ padding: "10px 12px", borderBottom: "1px solid #1e2d3d", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2 }}>⚠ 危険度ランキング</span>
+                {isCompact && (
+                  <button onClick={() => setDangerOpen(false)}
+                    style={{ background: "none", border: "none", color: "#3d5168", cursor: "pointer", fontSize: 14, padding: "2px 6px" }}>✕</button>
+                )}
               </div>
               <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-                {dangerGroups.filter(g => g.uncoveredCount > 0).slice(0, 15).map((g, i) => (
+                {dangerGroups.filter(g => g.uncoveredCount > 0).slice(0, 15).map((g) => (
                   <div key={g.id} style={{ background: "#070c12", border: "1px solid #1e2d3d", borderRadius: 4, padding: "8px 10px", marginBottom: 6 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ color: "#8b949e", fontSize: 11 }}>{g.country?.flag} {g.name}</span>
