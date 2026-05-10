@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
 import { PLATFORM_GROUPS, COUNTRY_META, TACTIC_ORDER } from "../constants.js";
+import { useWindowSize } from "../hooks/useWindowSize.js";
 
 export default function ImpactAnalysis({ groups, onSelectGroup, onSwitchToKillChain }) {
+  const { isMobile } = useWindowSize();
   const [selPlatforms, setSelPlatforms] = useState(["Windows"]);
 
   const togglePlatform = p => {
@@ -44,7 +46,7 @@ export default function ImpactAnalysis({ groups, onSelectGroup, onSwitchToKillCh
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#070c12" }}>
       {/* Platform selector */}
-      <div style={{ padding: "14px 20px", borderBottom: "1px solid #1e2d3d", background: "#0d1117", flexShrink: 0 }}>
+      <div style={{ padding: isMobile ? "10px 12px" : "14px 20px", borderBottom: "1px solid #1e2d3d", background: "#0d1117", flexShrink: 0 }}>
         <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 10 }}>
           対象環境を選択 — 選択環境を狙うグループをリスクスコア順にランキング表示
         </div>
@@ -67,7 +69,7 @@ export default function ImpactAnalysis({ groups, onSelectGroup, onSwitchToKillCh
       </div>
 
       {/* Ranking */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "10px 12px" : "16px 20px" }}>
         {!selPlatforms.length ? (
           <div style={{ color: "#3d5168", fontSize: 13, textAlign: "center", marginTop: 60 }}>
             対象環境を選択してください
@@ -108,10 +110,10 @@ export default function ImpactAnalysis({ groups, onSelectGroup, onSwitchToKillCh
                     <div style={{ height: "100%", width: `${barWidth}%`, background: badgeColor, borderRadius: 2, transition: "width 0.4s" }} />
                   </div>
 
-                  <div style={{ display: "flex", gap: 16, fontSize: 11, color: "#4a6378", marginBottom: 8 }}>
+                  <div style={{ display: "flex", gap: isMobile ? 8 : 16, fontSize: 11, color: "#4a6378", marginBottom: 8, flexWrap: "wrap" }}>
                     <span>テクニック: <span style={{ color: "#00ff88" }}>{g.techCount}</span></span>
-                    <span>戦術カバレッジ: <span style={{ color: "#00d4ff" }}>{g.tacticCoverage}/{TACTIC_ORDER.length}</span></span>
-                    <span>スコア = {g.techCount} × {g.tacticCoverage}/{TACTIC_ORDER.length}</span>
+                    <span>戦術: <span style={{ color: "#00d4ff" }}>{g.tacticCoverage}/{TACTIC_ORDER.length}</span></span>
+                    {!isMobile && <span>スコア = {g.techCount} × {g.tacticCoverage}/{TACTIC_ORDER.length}</span>}
                   </div>
 
                   {/* Tactic phases covered */}

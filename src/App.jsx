@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { COUNTRY_META, TACTIC_ORDER, TACTIC_SHORT } from "./constants.js";
 import { useAttackData } from "./hooks/useAttackData.js";
 import { useSound } from "./hooks/useSound.js";
+import { useWindowSize } from "./hooks/useWindowSize.js";
 import SoundControl from "./components/SoundControl.jsx";
 import Sidebar from "./components/Sidebar.jsx";
+import ResizableHandle from "./components/ResizableHandle.jsx";
 import NetworkGraph from "./components/NetworkGraph.jsx";
 import DataUpdateModal from "./components/DataUpdateModal.jsx";
 import SettingsModal from "./components/SettingsModal.jsx";
@@ -15,15 +17,27 @@ import ThreatBriefing from "./views/ThreatBriefing.jsx";
 
 const TABS = [
   ["killchain",  "⬛ KILL CHAIN"],
-  ["network",    "◉ NETWORK GRAPH"],
-  ["impact",     "⚡ IMPACT ANALYSIS"],
-  ["defense",    "🛡 DEFENSE GAP MAP"],
-  ["briefing",   "🤖 AI BRIEFING"],
+  ["network",    "◉ NETWORK"],
+  ["impact",     "⚡ IMPACT"],
+  ["defense",    "🛡 DEFENSE"],
+  ["briefing",   "🤖 AI BRIEF"],
 ];
+
+const SIDEBAR_KEY = "solar_sidebar_w";
+const SIDEBAR_MIN = 160;
+const SIDEBAR_MAX = 400;
+
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+
+function loadSidebarW(fallback) {
+  try { const v = parseInt(localStorage.getItem(SIDEBAR_KEY)); return isNaN(v) ? fallback : clamp(v, SIDEBAR_MIN, SIDEBAR_MAX); } catch { return fallback; }
+}
 
 export default function App() {
   const { groups, links, techniques, metadata, loading, error, isStale, triggerUpdate } = useAttackData();
   const { soundType, setSoundType, playClick, SOUND_TYPES } = useSound();
+  const { isMobile, isTablet } = useWindowSize();
+
   const [selId, setSelId]             = useState(null);
   const [view, setView]               = useState("killchain");
   const [search, setSearch]           = useState("");
@@ -32,11 +46,23 @@ export default function App() {
   const [updateLoading, setUpdateLoading]   = useState(false);
   const [showSettings, setShowSettings]     = useState(false);
   const [showAbout, setShowAbout]           = useState(false);
+  const [sidebarOpen, setSidebarOpen]       = useState(false);
+
+  const defaultSidebarW = isTablet ? 200 : 230;
+  const [sidebarW, setSidebarW] = useState(() => loadSidebarW(defaultSidebarW));
+
+  const handleSidebarDrag = useCallback((delta) => {
+    setSidebarW(w => {
+      const next = clamp(w + delta, SIDEBAR_MIN, SIDEBAR_MAX);
+      try { localStorage.setItem(SIDEBAR_KEY, String(next)); } catch {}
+      return next;
+    });
+  }, []);
 
   const effectiveSelId = selId || groups[0]?.id;
   const group = groups.find(g => g.id === effectiveSelId);
 
-  const handleSelect = id => { setSelId(id); };
+  const handleSelect = id => { setSelId(id); if (isMobile) setSidebarOpen(false); };
 
   const handleUpdate = async source => {
     setUpdateLoading(true);
@@ -56,55 +82,62 @@ export default function App() {
     });
   };
 
-  // Network view needs links filtered by selectedCountries
   const networkGroups = selectedCountries.size === 0 ? groups : groups.filter(g => selectedCountries.has(g.country?.code));
 
-  return (
-    <div style={{ height: "100vh", overflow: "hidden", background: "#070c12", color: "#c9d1d9", fontFamily: "monospace", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
-      <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2d3d", padding: "9px 20px", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-          <div style={{ color: "#00ff88", fontWeight: "bold", fontSize: 13, letterSpacing: 3 }}>◈ SHOOT</div>
-          <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>Structured Hunting of Online Threats</div>
-        </div>
-        <div style={{ color: "#3d5168", fontSize: 11 }}>MITRE ATT&CK® Enterprise · {loading ? "…" : groups.length} groups</div>
+  const showSidebar = view === "killchain" || view === "network";
 
-        {/* Last updated badge */}
-        {metadata?.lastUpdated && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+  return (
+    <div style={{ height: "100dvh", overflow: "hidden", background: "#070c12", color: "#c9d1d9", fontFamily: "monospace", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ background: "#0d1117", borderBottom: "1px solid #1e2d3d", padding: "9px 12px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+        {/* Mobile sidebar toggle */}
+        {showSidebar && isMobile && (
+          <button onClick={() => setSidebarOpen(o => !o)}
+            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "5px 9px", color: "#4a6378", cursor: "pointer", fontSize: 14, fontFamily: "monospace", flexShrink: 0 }}>
+            ☰
+          </button>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, flexShrink: 0 }}>
+          <div style={{ color: "#00ff88", fontWeight: "bold", fontSize: 13, letterSpacing: 3 }}>◈ SOLAR</div>
+          <div style={{ color: "#8b949e", fontSize: 9, letterSpacing: 1, whiteSpace: "nowrap" }}>ATT&CK Scenario Engine</div>
+        </div>
+        {!isMobile && (
+          <div style={{ color: "#3d5168", fontSize: 11, flexShrink: 0 }}>MITRE ATT&CK® Enterprise · {loading ? "…" : groups.length} groups</div>
+        )}
+
+        {metadata?.lastUpdated && !isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {isStale && (
               <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9, letterSpacing: 1 }}>
                 ⚠ STALE
               </span>
             )}
             <span style={{ color: "#3d5168", fontSize: 10 }}>
-              Last updated: {fmtDate(metadata.lastUpdated)}
+              {fmtDate(metadata.lastUpdated)}
             </span>
           </div>
         )}
 
-        {/* Tabs */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap" }}>
+        {/* Tabs — scrollable on mobile */}
+        <div className="tabs-scroll" style={{ marginLeft: "auto", display: "flex", gap: 4, flexShrink: 0 }}>
           {TABS.map(([v, label]) => (
             <button key={v} onClick={() => { playClick(); setView(v); }}
-              style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 12px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s" }}>
+              style={{ background: view === v ? "#00ff8822" : "transparent", border: `1px solid ${view === v ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: view === v ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, transition: "all 0.15s", whiteSpace: "nowrap" }}>
               {label}
             </button>
           ))}
-          {/* Data update button */}
           <button onClick={() => { playClick(); setShowUpdateModal(true); }}
-            style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 12px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
-            ↻ Update Data
+            style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
+            ↻
           </button>
           <button onClick={() => { playClick(); setShowSettings(true); }}
-            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 12px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
-            ⚙ Settings
+            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
+            ⚙
           </button>
           <button onClick={() => { playClick(); setShowAbout(true); }}
-            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 12px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
-            ⓘ About
+            style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1 }}>
+            ⓘ
           </button>
-          {/* Sound selector */}
           <SoundControl
             soundType={soundType}
             setSoundType={setSoundType}
@@ -130,19 +163,50 @@ export default function App() {
 
       {/* Main layout */}
       {!!groups.length && (
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          {/* Sidebar — shown for killchain & network views */}
-          {(view === "killchain" || view === "network") && (
-            <Sidebar
-              groups={groups}
-              selId={effectiveSelId}
-              onSelect={handleSelect}
-              search={search}
-              onSearch={setSearch}
-              selectedCountries={selectedCountries}
-              onCountryToggle={toggleCountry}
-              playClick={playClick}
-            />
+        <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+          {/* Mobile sidebar overlay backdrop */}
+          {isMobile && sidebarOpen && showSidebar && (
+            <div onClick={() => setSidebarOpen(false)}
+              style={{ position: "absolute", inset: 0, background: "#00000088", zIndex: 20 }} />
+          )}
+
+          {/* Sidebar */}
+          {showSidebar && (
+            <>
+              {isMobile ? (
+                sidebarOpen && (
+                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 30, display: "flex" }}>
+                    <Sidebar
+                      groups={groups}
+                      selId={effectiveSelId}
+                      onSelect={handleSelect}
+                      search={search}
+                      onSearch={setSearch}
+                      selectedCountries={selectedCountries}
+                      onCountryToggle={toggleCountry}
+                      playClick={playClick}
+                      width={280}
+                      onClose={() => setSidebarOpen(false)}
+                    />
+                  </div>
+                )
+              ) : (
+                <>
+                  <Sidebar
+                    groups={groups}
+                    selId={effectiveSelId}
+                    onSelect={handleSelect}
+                    search={search}
+                    onSearch={setSearch}
+                    selectedCountries={selectedCountries}
+                    onCountryToggle={toggleCountry}
+                    playClick={playClick}
+                    width={sidebarW}
+                  />
+                  <ResizableHandle onDrag={handleSidebarDrag} />
+                </>
+              )}
+            </>
           )}
 
           {/* Content area */}
@@ -232,7 +296,6 @@ export default function App() {
         &nbsp;|&nbsp; © {metadata?.mitreYear ?? new Date().getFullYear()} <a href="https://hariolab.net" target="_blank" rel="noreferrer" style={{ color: "#3d5168", textDecoration: "underline" }}>hario-lab</a>
       </div>
 
-      {/* Data update modal */}
       {showUpdateModal && (
         <DataUpdateModal
           metadata={metadata}

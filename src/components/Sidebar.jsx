@@ -4,7 +4,7 @@ import { COUNTRY_META } from "../constants.js";
 const SORT_MODES = ["alpha", "ttp", "country"];
 const SORT_LABELS = { alpha: "A→Z", ttp: "TTP数", country: "国別" };
 
-export default function Sidebar({ groups, selId, onSelect, search, onSearch, selectedCountries, onCountryToggle, playClick = () => {} }) {
+export default function Sidebar({ groups, selId, onSelect, search, onSearch, selectedCountries, onCountryToggle, playClick = () => {}, width = 230, onClose }) {
   const [sortMode, setSortMode] = useState("alpha");
 
   const avg = groups.length ? Math.round(groups.reduce((s, g) => s + g.techniques.length, 0) / groups.length) : 0;
@@ -28,16 +28,20 @@ export default function Sidebar({ groups, selId, onSelect, search, onSearch, sel
   const isAll = selectedCountries.size === 0;
 
   return (
-    <div style={{ width: 230, height: "100vh", background: "#0d1117", borderRight: "1px solid #1e2d3d", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
+    <div style={{ width, height: "100%", background: "#0d1117", borderRight: "1px solid #1e2d3d", display: "flex", flexDirection: "column", flexShrink: 0, overflow: "hidden" }}>
+      {onClose && (
+        <div style={{ padding: "8px 10px", borderBottom: "1px solid #1e2d3d", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+          <button onClick={onClose}
+            style={{ background: "none", border: "none", color: "#3d5168", cursor: "pointer", fontSize: 16, padding: "2px 6px" }}>✕</button>
+        </div>
+      )}
       <div style={{ padding: "10px 10px 6px", borderBottom: "1px solid #1e2d3d", flexShrink: 0 }}>
         <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 6 }}>FILTER BY ORIGIN</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {/* ALL ボタン */}
           <button onClick={() => { playClick(); onCountryToggle("ALL"); }}
             style={{ background: isAll ? "#00ff8833" : "transparent", border: `1px solid ${isAll ? "#00ff88" : "#1e2d3d"}`, borderRadius: 3, padding: "3px 7px", cursor: "pointer", fontSize: 11, color: isAll ? "#00ff88" : "#4a6378", fontFamily: "monospace", transition: "all 0.15s" }}>
             🌐 ALL
           </button>
-          {/* 各国トグルボタン */}
           {Object.entries(COUNTRY_META).map(([code, m]) => {
             const active = selectedCountries.has(code);
             return (
@@ -48,7 +52,6 @@ export default function Sidebar({ groups, selId, onSelect, search, onSearch, sel
             );
           })}
         </div>
-        {/* 選択中の国の組み合わせ表示 */}
         {selectedCountries.size > 1 && (
           <div style={{ marginTop: 5, fontSize: 9, color: "#00d4ff", letterSpacing: 1 }}>
             {[...selectedCountries].map(c => COUNTRY_META[c]?.flag).join(" ")} {selectedCountries.size}カ国選択中
