@@ -48,6 +48,7 @@ export default function App() {
   const [showAbout, setShowAbout]           = useState(false);
   const [sidebarOpen, setSidebarOpen]       = useState(false);
   const [showTabMenu, setShowTabMenu]       = useState(false);
+  const [showToolMenu, setShowToolMenu]     = useState(false);
 
   const defaultSidebarW = isTablet ? 200 : 230;
   const [sidebarW, setSidebarW] = useState(() => loadSidebarW(defaultSidebarW));
@@ -116,39 +117,66 @@ export default function App() {
               <span style={{ color: "#3d5168", fontSize: 10 }}>{fmtDate(metadata.lastUpdated)}</span>
             </div>
           )}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
-            {isStale && !isDesktop && (
-              <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9 }}>⚠</span>
-            )}
-            <button onClick={() => { playClick(); setShowUpdateModal(true); }}
-              style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
-              ↻
-            </button>
-            <button onClick={() => { playClick(); setShowSettings(true); }}
-              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
-              ⚙
-            </button>
-            <button onClick={() => { playClick(); setShowAbout(true); }}
-              style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
-              ⓘ
-            </button>
-            <SoundControl
-              soundType={soundType}
-              setSoundType={setSoundType}
-              playClick={playClick}
-              SOUND_TYPES={SOUND_TYPES}
-            />
-            {/* Tab menu button — non-desktop only */}
-            {!isDesktop && (
+          {/* Desktop: ↻ ⚙ ⓘ + Sound individually */}
+          {isDesktop ? (
+            <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
+              <button onClick={() => { playClick(); setShowUpdateModal(true); }}
+                style={{ background: isStale ? "#f59e0b22" : "transparent", border: `1px solid ${isStale ? "#f59e0b" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: isStale ? "#f59e0b" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+                ↻
+              </button>
+              <button onClick={() => { playClick(); setShowSettings(true); }}
+                style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+                ⚙
+              </button>
+              <button onClick={() => { playClick(); setShowAbout(true); }}
+                style={{ background: "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+                ⓘ
+              </button>
+              <SoundControl soundType={soundType} setSoundType={setSoundType} playClick={playClick} SOUND_TYPES={SOUND_TYPES} />
+            </div>
+          ) : (
+            /* Tablet/Mobile: Sound center + collapsed tool menu + tab menu */
+            <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
+              {isStale && (
+                <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9 }}>⚠</span>
+              )}
+              {/* Sound selector — center-ish */}
+              <SoundControl soundType={soundType} setSoundType={setSoundType} playClick={playClick} SOUND_TYPES={SOUND_TYPES} />
+              {/* Collapsed tool menu: ↻ ⚙ ⓘ */}
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowTabMenu(o => !o)}
+                <button onClick={() => { setShowToolMenu(o => !o); setShowTabMenu(false); }}
+                  style={{ background: showToolMenu ? "#1e2d3d" : "transparent", border: "1px solid #1e2d3d", borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
+                  ⚙
+                </button>
+                {showToolMenu && (
+                  <>
+                    <div onClick={() => setShowToolMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 50, background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 6, overflow: "hidden", minWidth: 160, boxShadow: "0 8px 24px #00000088" }}>
+                      <button onClick={() => { playClick(); setShowUpdateModal(true); setShowToolMenu(false); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", background: isStale ? "#f59e0b11" : "transparent", border: "none", borderBottom: "1px solid #1e2d3d", padding: "11px 14px", color: isStale ? "#f59e0b" : "#8b949e", cursor: "pointer", fontSize: 12, fontFamily: "monospace" }}>
+                        ↻ データ更新
+                      </button>
+                      <button onClick={() => { playClick(); setShowSettings(true); setShowToolMenu(false); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", border: "none", borderBottom: "1px solid #1e2d3d", padding: "11px 14px", color: "#8b949e", cursor: "pointer", fontSize: 12, fontFamily: "monospace" }}>
+                        ⚙ 設定
+                      </button>
+                      <button onClick={() => { playClick(); setShowAbout(true); setShowToolMenu(false); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "11px 14px", color: "#8b949e", cursor: "pointer", fontSize: 12, fontFamily: "monospace" }}>
+                        ⓘ About
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Tab menu */}
+              <div style={{ position: "relative" }}>
+                <button onClick={() => { setShowTabMenu(o => !o); setShowToolMenu(false); }}
                   style={{ background: showTabMenu ? "#00ff8822" : "transparent", border: `1px solid ${showTabMenu ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 13, color: showTabMenu ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
                   ≡
                 </button>
                 {showTabMenu && (
                   <>
-                    <div onClick={() => setShowTabMenu(false)}
-                      style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                    <div onClick={() => setShowTabMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
                     <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 50, background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 6, overflow: "hidden", minWidth: 180, boxShadow: "0 8px 24px #00000088" }}>
                       {TABS.map(([v, label]) => (
                         <button key={v} onClick={() => { playClick(); setView(v); setShowTabMenu(false); }}
@@ -160,8 +188,8 @@ export default function App() {
                   </>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         {/* Row 2: inline tabs — desktop only */}
         {isDesktop && (
@@ -247,18 +275,14 @@ export default function App() {
             {view === "network" && (
               <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
                 <div style={{ flex: 1, position: "relative", background: "#070c12" }}>
-                  <div style={{ position: "absolute", top: 12, right: 12, zIndex: 10, background: "#0d1117ee", border: "1px solid #1e2d3d", borderRadius: 6, padding: "10px 14px" }}>
-                    <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 8 }}>LEGEND</div>
-                    {Object.entries(COUNTRY_META).map(([code, m]) => (
-                      <div key={code} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: m.color + "44", border: `1.5px solid ${m.color}`, flexShrink: 0 }} />
-                        <span style={{ fontSize: 10, color: "#8b949e" }}>{m.flag} {m.label}</span>
-                      </div>
-                    ))}
-                    <div style={{ borderTop: "1px solid #1e2d3d", marginTop: 8, paddingTop: 8, color: "#3d5168", fontSize: 9, lineHeight: 1.6 }}>
-                      エッジの太さ = 共有テクニック数<br />
-                      閾値: 7以上で表示<br />
-                      ドラッグ / スクロールでズーム
+                  <div style={{ position: "absolute", top: 10, right: 10, zIndex: 10, background: "#0d1117cc", border: "1px solid #1e2d3d", borderRadius: 5, padding: "6px 8px" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 8px", maxWidth: 140 }}>
+                      {Object.entries(COUNTRY_META).map(([code, m]) => (
+                        <div key={code} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <div style={{ width: 7, height: 7, borderRadius: "50%", background: m.color + "55", border: `1.5px solid ${m.color}`, flexShrink: 0 }} />
+                          <span style={{ fontSize: 9, color: "#6b7280", whiteSpace: "nowrap" }}>{m.flag} {code}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   {group && (
