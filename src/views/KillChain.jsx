@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { TACTIC_ORDER, TACTIC_SHORT, TACTIC_CLR, TACTIC_INFO, COUNTRY_META } from "../constants.js";
 import { callAnthropicAPI, getStoredApiKey } from "../utils/apiClient.js";
 import { useWindowSize } from "../hooks/useWindowSize.js";
@@ -79,7 +79,12 @@ export default function KillChain({ group, groups, onSelectGroup, playClick = ()
 
   const countryDist = Object.entries(
     groups.reduce((acc, g) => { const c = g.country?.code || "UNK"; acc[c] = (acc[c] || 0) + 1; return acc; }, {})
-  ).map(([code, count]) => ({ code, count, color: COUNTRY_META[code]?.color || "#6b7280" }));
+  ).map(([code, count]) => ({
+    code,
+    count,
+    color: COUNTRY_META[code]?.color || "#6b7280",
+    name: `${COUNTRY_META[code]?.flag ?? "?"} ${code}`,
+  })).sort((a, b) => b.count - a.count);
 
   const handleTechClick = tech => {
     playClick();
@@ -157,9 +162,23 @@ Write a cinematic but technically accurate narrative from initial access to impa
             </BarChart>
           </ResponsiveContainer>
         </div>
-        {/* PLATFORMS + PIE — desktop only */}
+        {/* BY NATION + PLATFORMS — desktop only */}
         {!isCompact && (
           <>
+            <div style={{ width: 110, flexShrink: 0 }}>
+              <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>BY NATION</div>
+              <BarChart width={106} height={Math.max(80, countryDist.length * 14)} data={countryDist} layout="vertical" margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#8b949e", fontSize: 9 }} axisLine={false} tickLine={false} width={42} />
+                <Tooltip
+                  formatter={(v, _, p) => [v + " groups", p.payload.code]}
+                  contentStyle={{ background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 4, fontSize: 11, fontFamily: "monospace" }}
+                  itemStyle={{ color: "#c9d1d9" }} />
+                <Bar dataKey="count" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }}>
+                  {countryDist.map((d, i) => <Cell key={i} fill={d.color} />)}
+                </Bar>
+              </BarChart>
+            </div>
             <div style={{ width: 200, flexShrink: 0 }}>
               <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>PLATFORMS</div>
               <BarChart width={196} height={Math.max(80, platformData.length * 18)} data={platformData} layout="vertical" margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
@@ -168,19 +187,6 @@ Write a cinematic but technically accurate narrative from initial access to impa
                 <Tooltip content={<CTooltip />} />
                 <Bar dataKey="count" fill="#00d4ff" radius={[0, 2, 2, 0]} background={{ fill: "#0d1117" }} />
               </BarChart>
-            </div>
-            <div style={{ width: 80, flexShrink: 0 }}>
-              <div style={{ color: "#3d5168", fontSize: 9, letterSpacing: 2, marginBottom: 2 }}>BY NATION</div>
-              <ResponsiveContainer width="100%" height={80}>
-                <PieChart>
-                  <Pie data={countryDist} dataKey="count" cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2}>
-                    {countryDist.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v, n, p) => [v + " groups", p.payload.code]}
-                    contentStyle={{ background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 4, fontSize: 11, fontFamily: "monospace" }}
-                    itemStyle={{ color: "#c9d1d9" }} />
-                </PieChart>
-              </ResponsiveContainer>
             </div>
           </>
         )}
