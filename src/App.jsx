@@ -135,13 +135,32 @@ export default function App() {
               <SoundControl soundType={soundType} setSoundType={setSoundType} playClick={playClick} SOUND_TYPES={SOUND_TYPES} />
             </div>
           ) : (
-            /* Tablet/Mobile: Sound center + collapsed tool menu + tab menu */
+            /* Tablet/Mobile: [tab menu (current name)] [⚙ tools] [Sound icon-only] */
             <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
               {isStale && (
                 <span style={{ background: "#f59e0b22", border: "1px solid #f59e0b55", borderRadius: 3, padding: "2px 6px", color: "#f59e0b", fontSize: 9 }}>⚠</span>
               )}
-              {/* Sound selector — center-ish */}
-              <SoundControl soundType={soundType} setSoundType={setSoundType} playClick={playClick} SOUND_TYPES={SOUND_TYPES} />
+              {/* Tab menu — shows current tab name, leftmost */}
+              <div style={{ position: "relative" }}>
+                <button onClick={() => { setShowTabMenu(o => !o); setShowToolMenu(false); }}
+                  style={{ background: showTabMenu ? "#00ff8822" : "#00ff8811", border: `1px solid ${showTabMenu ? "#00ff88" : "#00ff8855"}`, borderRadius: 4, padding: "4px 10px", fontSize: 11, color: "#00ff88", cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+                  <span>{TABS.find(([v]) => v === view)?.[1] ?? "≡"}</span>
+                  <span style={{ opacity: 0.5, fontSize: 9 }}>{showTabMenu ? "▲" : "▼"}</span>
+                </button>
+                {showTabMenu && (
+                  <>
+                    <div onClick={() => setShowTabMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50, background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 6, overflow: "hidden", minWidth: 180, boxShadow: "0 8px 24px #00000088" }}>
+                      {TABS.map(([v, label]) => (
+                        <button key={v} onClick={() => { playClick(); setView(v); setShowTabMenu(false); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: view === v ? "#00ff8822" : "transparent", border: "none", borderBottom: "1px solid #1e2d3d", padding: "12px 16px", color: view === v ? "#00ff88" : "#8b949e", cursor: "pointer", fontSize: 13, fontFamily: "monospace", letterSpacing: 1 }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               {/* Collapsed tool menu: ↻ ⚙ ⓘ */}
               <div style={{ position: "relative" }}>
                 <button onClick={() => { setShowToolMenu(o => !o); setShowTabMenu(false); }}
@@ -168,26 +187,8 @@ export default function App() {
                   </>
                 )}
               </div>
-              {/* Tab menu */}
-              <div style={{ position: "relative" }}>
-                <button onClick={() => { setShowTabMenu(o => !o); setShowToolMenu(false); }}
-                  style={{ background: showTabMenu ? "#00ff8822" : "transparent", border: `1px solid ${showTabMenu ? "#00ff88" : "#1e2d3d"}`, borderRadius: 4, padding: "4px 10px", fontSize: 13, color: showTabMenu ? "#00ff88" : "#4a6378", cursor: "pointer", fontFamily: "monospace" }}>
-                  ≡
-                </button>
-                {showTabMenu && (
-                  <>
-                    <div onClick={() => setShowTabMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 50, background: "#0d1117", border: "1px solid #1e2d3d", borderRadius: 6, overflow: "hidden", minWidth: 180, boxShadow: "0 8px 24px #00000088" }}>
-                      {TABS.map(([v, label]) => (
-                        <button key={v} onClick={() => { playClick(); setView(v); setShowTabMenu(false); }}
-                          style={{ display: "block", width: "100%", textAlign: "left", background: view === v ? "#00ff8822" : "transparent", border: "none", borderBottom: "1px solid #1e2d3d", padding: "12px 16px", color: view === v ? "#00ff88" : "#8b949e", cursor: "pointer", fontSize: 13, fontFamily: "monospace", letterSpacing: 1 }}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+              {/* Sound — icon only, rightmost */}
+              <SoundControl soundType={soundType} setSoundType={setSoundType} playClick={playClick} SOUND_TYPES={SOUND_TYPES} compact={true} />
             </div>
           )}
         </div>

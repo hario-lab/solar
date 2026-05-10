@@ -8,7 +8,7 @@ const ICON = {
   OFF:        "🔇",
 };
 
-export default function SoundControl({ soundType, setSoundType, playClick, SOUND_TYPES }) {
+export default function SoundControl({ soundType, setSoundType, playClick, SOUND_TYPES, compact = false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -49,7 +49,7 @@ export default function SoundControl({ soundType, setSoundType, playClick, SOUND
           background: bgColor,
           border: `1px solid ${border}`,
           borderRadius: 4,
-          padding: "4px 10px",
+          padding: compact ? "4px 8px" : "4px 10px",
           fontSize: 11,
           color: accent,
           cursor: "pointer",
@@ -57,14 +57,14 @@ export default function SoundControl({ soundType, setSoundType, playClick, SOUND
           letterSpacing: 1,
           display: "flex",
           alignItems: "center",
-          gap: 5,
+          gap: 4,
           transition: "all 0.15s",
           whiteSpace: "nowrap",
         }}
       >
         <span style={{ fontSize: 13 }}>{icon}</span>
-        <span>{soundType}</span>
-        <span style={{ opacity: 0.5, fontSize: 9 }}>{open ? "▲" : "▼"}</span>
+        {!compact && <span>{soundType}</span>}
+        {!compact && <span style={{ opacity: 0.5, fontSize: 9 }}>{open ? "▲" : "▼"}</span>}
       </button>
 
       {/* ドロップダウン */}
